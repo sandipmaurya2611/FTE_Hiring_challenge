@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const { report } = await req.json();
 
     const element = React.createElement(ReportDocument, { report });
-    const stream = await renderToStream(element);
+    const stream = await renderToStream(element as any);
 
     const chunks: Uint8Array[] = [];
     for await (const chunk of stream as any) {
