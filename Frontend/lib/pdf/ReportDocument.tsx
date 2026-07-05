@@ -4,148 +4,97 @@ import { ReportData } from "../../types";
 
 const styles = StyleSheet.create({
   page: {
-    backgroundColor: "#0a0a0a",
-    padding: 40,
+    backgroundColor: "#ffffff",
     fontFamily: "Helvetica",
-    color: "#ededed",
   },
-  header: {
-    marginBottom: 24,
-    borderBottom: "1 solid #222222",
-    paddingBottom: 16,
+  headerContainer: {
+    backgroundColor: "#0a0a0a",
+    paddingTop: 50,
+    paddingBottom: 40,
+    paddingHorizontal: 50,
   },
-  badge: {
-    fontSize: 7,
-    color: "#FBBF24",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 6,
+  goldBar: {
+    height: 10,
+    backgroundColor: "#C49B45",
   },
-  companyName: {
-    fontSize: 24,
-    fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
-    marginBottom: 4,
-  },
-  website: {
+  headerBadge: {
+    color: "#C49B45",
     fontSize: 9,
-    color: "#71717a",
-  },
-  sectionTitle: {
-    fontSize: 7,
-    color: "#FBBF24",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    marginBottom: 8,
-    marginTop: 20,
-  },
-  card: {
-    backgroundColor: "#111111",
-    borderRadius: 6,
-    padding: 12,
-    border: "1 solid #1e1e1e",
-    marginBottom: 8,
-  },
-  cardLabel: {
-    fontSize: 7,
-    color: "#52525b",
     letterSpacing: 1.5,
     textTransform: "uppercase",
-    marginBottom: 4,
+    marginBottom: 10,
   },
-  cardValue: {
+  headerTitle: {
+    color: "#ffffff",
+    fontSize: 32,
+    fontFamily: "Helvetica",
+  },
+  contentContainer: {
+    paddingTop: 10,
+    paddingHorizontal: 50,
+    paddingBottom: 50,
+  },
+  sectionTitle: {
+    color: "#C49B45",
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginTop: 25,
+    marginBottom: 8,
+  },
+  sectionDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#eeeeee",
+    marginBottom: 15,
+  },
+  infoRow: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  infoLabel: {
+    width: 100,
+    color: "#666666",
     fontSize: 10,
-    color: "#d4d4d8",
+  },
+  infoValue: {
+    flex: 1,
+    color: "#333333",
+    fontSize: 10,
   },
   bodyText: {
+    color: "#333333",
     fontSize: 10,
-    color: "#a1a1aa",
     lineHeight: 1.6,
   },
-  pill: {
-    backgroundColor: "#111111",
-    border: "1 solid #1e1e1e",
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginRight: 6,
-    marginBottom: 6,
-  },
-  pillText: {
-    fontSize: 9,
-    color: "#d4d4d8",
-  },
-  pillsRow: {
+  bulletRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  bullet: {
-    flexDirection: "row",
-    marginBottom: 6,
+    marginBottom: 8,
     alignItems: "flex-start",
   },
   bulletDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: "#FBBF24",
-    marginRight: 8,
-    marginTop: 3,
+    width: 15,
+    fontSize: 10,
+    color: "#666666",
   },
   bulletText: {
     flex: 1,
     fontSize: 10,
-    color: "#a1a1aa",
+    color: "#333333",
     lineHeight: 1.5,
   },
-  competitorGrid: {
+  competitorRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  competitorCard: {
-    backgroundColor: "#111111",
-    border: "1 solid #1e1e1e",
-    borderRadius: 6,
-    padding: 10,
-    width: "30%",
-    marginBottom: 6,
+    marginBottom: 8,
   },
   competitorName: {
+    width: 120,
+    color: "#333333",
     fontSize: 10,
-    fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
-    marginBottom: 3,
   },
   competitorWebsite: {
-    fontSize: 8,
-    color: "#60a5fa",
-  },
-  contactRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 4,
-  },
-  contactCard: {
     flex: 1,
-    backgroundColor: "#111111",
-    borderRadius: 6,
-    padding: 10,
-    border: "1 solid #1e1e1e",
-  },
-  footer: {
-    position: "absolute",
-    bottom: 24,
-    left: 40,
-    right: 40,
-    borderTop: "1 solid #1a1a1a",
-    paddingTop: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  footerText: {
-    fontSize: 7,
-    color: "#3f3f46",
+    color: "#777777",
+    fontSize: 10,
   },
 });
 
@@ -157,79 +106,80 @@ export function ReportDocument({ report }: Props) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.badge}>Company Intelligence Report</Text>
-          <Text style={styles.companyName}>{report.companyName}</Text>
-          <Text style={styles.website}>{report.website}</Text>
+        <View style={styles.headerContainer} fixed>
+          <Text style={styles.headerBadge}>RELU CONSULTANCY · COMPANY RESEARCH REPORT</Text>
+          <Text style={styles.headerTitle}>{report.companyName}</Text>
         </View>
+        <View style={styles.goldBar} fixed />
 
-        {/* Contact Info */}
-        <View style={styles.contactRow}>
-          <View style={styles.contactCard}>
-            <Text style={styles.cardLabel}>Phone</Text>
-            <Text style={styles.cardValue}>{report.phone || "Not available"}</Text>
+        <View style={styles.contentContainer}>
+          {/* Company Information */}
+          <Text style={styles.sectionTitle}>COMPANY INFORMATION</Text>
+          <View style={styles.sectionDivider} />
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Website</Text>
+            <Text style={styles.infoValue}>{report.website || "Not available"}</Text>
           </View>
-          <View style={styles.contactCard}>
-            <Text style={styles.cardLabel}>Address</Text>
-            <Text style={styles.cardValue}>{report.address || "Not available"}</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Phone</Text>
+            <Text style={styles.infoValue}>{report.phone || "Not publicly listed"}</Text>
           </View>
-        </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Address</Text>
+            <Text style={styles.infoValue}>{report.address || "Not available"}</Text>
+          </View>
 
-        {/* Summary */}
-        {report.summary && (
-          <>
-            <Text style={styles.sectionTitle}>Company Summary</Text>
-            <Text style={styles.bodyText}>{report.summary}</Text>
-          </>
-        )}
+          {/* Summary */}
+          {report.summary && (
+            <View>
+              <Text style={styles.sectionTitle}>COMPANY SUMMARY</Text>
+              <View style={styles.sectionDivider} />
+              <Text style={styles.bodyText}>{report.summary}</Text>
+            </View>
+          )}
 
-        {/* Products */}
-        {report.products?.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Products & Services</Text>
-            <View style={styles.pillsRow}>
+          {/* Products */}
+          {report.products?.length > 0 && (
+            <View wrap={false}>
+              <Text style={styles.sectionTitle}>PRODUCTS &amp; SERVICES</Text>
+              <View style={styles.sectionDivider} />
               {report.products.map((p, i) => (
-                <View key={i} style={styles.pill}>
-                  <Text style={styles.pillText}>{p}</Text>
+                <View key={i} style={styles.bulletRow}>
+                  <Text style={styles.bulletDot}>•</Text>
+                  <Text style={styles.bulletText}>{p}</Text>
                 </View>
               ))}
             </View>
-          </>
-        )}
+          )}
 
-        {/* Pain Points */}
-        {report.painPoints?.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>AI-Generated Pain Points</Text>
-            {report.painPoints.map((pt, i) => (
-              <View key={i} style={styles.bullet}>
-                <View style={styles.bulletDot} />
-                <Text style={styles.bulletText}>{pt}</Text>
-              </View>
-            ))}
-          </>
-        )}
+          {/* Pain Points */}
+          {report.painPoints?.length > 0 && (
+            <View wrap={false}>
+              <Text style={styles.sectionTitle}>AI-GENERATED PAIN POINTS</Text>
+              <View style={styles.sectionDivider} />
+              {report.painPoints.map((pt, i) => (
+                <View key={i} style={styles.bulletRow}>
+                  <Text style={styles.bulletDot}>•</Text>
+                  <Text style={styles.bulletText}>{pt}</Text>
+                </View>
+              ))}
+            </View>
+          )}
 
-        {/* Competitors */}
-        {report.competitors?.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Competitors</Text>
-            <View style={styles.competitorGrid}>
+          {/* Competitors */}
+          {report.competitors?.length > 0 && (
+            <View wrap={false}>
+              <Text style={styles.sectionTitle}>COMPETITORS</Text>
+              <View style={styles.sectionDivider} />
               {report.competitors.map((c, i) => (
-                <View key={i} style={styles.competitorCard}>
+                <View key={i} style={styles.competitorRow}>
                   <Text style={styles.competitorName}>{c.name}</Text>
                   <Text style={styles.competitorWebsite}>{c.website}</Text>
                 </View>
               ))}
             </View>
-          </>
-        )}
-
-        {/* Footer */}
-        <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>Relu Consultancy · Company Intelligence</Text>
-          <Text style={styles.footerText}>Generated by AI Research Assistant</Text>
+          )}
         </View>
       </Page>
     </Document>

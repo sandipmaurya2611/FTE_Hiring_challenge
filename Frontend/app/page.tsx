@@ -27,7 +27,7 @@ export default function Home() {
 
     const openRouterKey = localStorage.getItem("openRouterKey") || "";
     const serperKey = localStorage.getItem("serperKey") || "";
-    const aiModel = localStorage.getItem("aiModel") || "anthropic/claude-3.5-sonnet";
+    const aiModel = localStorage.getItem("aiModel") || "anthropic/claude-sonnet-5";
 
     if (!openRouterKey || !serperKey) {
       setErrorMsg("Please save your OpenRouter and Serper.dev API keys in the sidebar first.");
@@ -39,6 +39,8 @@ export default function Home() {
     setReport(null);
     setProgress([]);
     setErrorMsg("");
+
+    let reportReceived = false;
 
     try {
       const res = await fetch("/api/research", {
@@ -62,26 +64,37 @@ export default function Home() {
         buffer = lines.pop() || "";
 
         for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.type === "progress") {
-                setProgress(prev => [...prev, data.message]);
-              } else if (data.type === "complete") {
-                setReport(data.report);
-                setIsGenerating(false);
-              } else if (data.type === "error") {
-                throw new Error(data.message);
-              }
-            } catch (e) {
-              console.error("Error parsing stream data:", e);
-            }
+          if (!line.startsWith("data: ")) continue;
+          let data;
+          try {
+            data = JSON.parse(line.slice(6));
+          } catch (e) {
+            console.warn("Skipping unparseable SSE line:", line);
+            continue;
+          }
+
+          if (data.type === "progress") {
+            setProgress(prev => [...prev, data.message]);
+          } else if (data.type === "complete") {
+            reportReceived = true;
+            setReport(data.report);
+            setIsGenerating(false);
+            // clear the input field
+            const input = document.querySelector<HTMLInputElement>("input[name='search']");
+            if (input) input.value = "";
+          } else if (data.type === "error") {
+            throw new Error(data.message);
           }
         }
       }
+
+      // Safety net: if stream ended but complete event never came
+      if (!reportReceived) {
+        throw new Error("The analysis stream ended before a report was received. Please try again.");
+      }
     } catch (error: any) {
-      console.error(error);
-      setErrorMsg(error.message || "An unexpected error occurred.");
+      console.error("[Research Error]", error);
+      setErrorMsg(error.message || "An unexpected error occurred. Please try again.");
       setIsGenerating(false);
     }
   };

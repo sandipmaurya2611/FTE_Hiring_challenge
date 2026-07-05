@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
 const MAX_PAGES = 6;
-const REQUEST_TIMEOUT_MS = 8000;
+const REQUEST_TIMEOUT_MS = 3000;
 const HIGH_VALUE_PATHS = ["/about", "/about-us", "/contact", "/contact-us", "/products", "/services", "/solutions", "/pricing", "/team", "/company"];
 
 function normalizeUrl(url: string): string {

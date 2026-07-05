@@ -13,7 +13,7 @@ export default function Sidebar({ onNewResearch, onRequestClose }: SidebarProps)
 
   const [openRouterKey, setOpenRouterKey] = useState("");
   const [serperKey, setSerperKey] = useState("");
-  const [aiModel, setAiModel] = useState("anthropic/claude-3.5-sonnet");
+  const [aiModel, setAiModel] = useState("anthropic/claude-sonnet-5");
   const [discordToken, setDiscordToken] = useState("");
   const [discordChannel, setDiscordChannel] = useState("");
   const [applicantName, setApplicantName] = useState("");
@@ -23,7 +23,7 @@ export default function Sidebar({ onNewResearch, onRequestClose }: SidebarProps)
   useEffect(() => {
     setOpenRouterKey(localStorage.getItem("openRouterKey") || "");
     setSerperKey(localStorage.getItem("serperKey") || "");
-    setAiModel(localStorage.getItem("aiModel") || "anthropic/claude-3.5-sonnet");
+    setAiModel(localStorage.getItem("aiModel") || "anthropic/claude-sonnet-5");
     setDiscordToken(localStorage.getItem("discordToken") || "");
     setDiscordChannel(localStorage.getItem("discordChannel") || "");
     setApplicantName(localStorage.getItem("applicantName") || "");
@@ -128,11 +128,11 @@ export default function Sidebar({ onNewResearch, onRequestClose }: SidebarProps)
                   onChange={(e) => setAiModel(e.target.value)}
                   className="w-full bg-[#111111] border border-zinc-800 rounded-md px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-zinc-600 transition-colors appearance-none cursor-pointer"
                 >
-                  <option value="anthropic/claude-3.5-sonnet">Claude Sonnet 3.5</option>
-                  <option value="anthropic/claude-3.5-haiku">Claude Haiku 3.5</option>
-                  <option value="openai/gpt-4o">GPT-4o</option>
-                  <option value="google/gemini-1.5-pro">Gemini 1.5 Pro</option>
-                  <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
+                  <option value="anthropic/claude-sonnet-5">Claude Sonnet 5</option>
+                  <option value="anthropic/claude-opus-4.8">Claude Opus 4.8</option>
+                  <option value="google/gemini-3.5-flash">Gemini 3.5 Flash</option>
+                  <option value="openai/gpt-4.1">GPT-4.1</option>
+                  <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-zinc-500">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>

@@ -3,6 +3,7 @@ import { crawl } from "../../../lib/crawler/crawl";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 const SERPER_URL = "https://google.serper.dev/search";
 
@@ -125,55 +126,98 @@ Rules:
 - phone: use "${phone}" if available, otherwise search the crawled content
 - address: use "${address}" if available, otherwise search the crawled content`;
 
-        const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${openRouterKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: aiModel || "anthropic/claude-3.5-sonnet",
-            messages: [{ role: "user", content: prompt }],
-            response_format: { type: "json_object" },
-          }),
-        });
+        const activeModel = aiModel || "anthropic/claude-sonnet-5";
+        const requestPayload = {
+          model: activeModel,
+          messages: [{ role: "user", content: prompt }],
+          response_format: { type: "json_object" },
+        };
 
-        if (!aiRes.ok) {
-          // Retry without json_object mode
+        console.log("[OpenRouter] ===== REQUEST DEBUG =====");
+        console.log("[OpenRouter] Endpoint: https://openrouter.ai/api/v1/chat/completions");
+        console.log("[OpenRouter] Model ID being sent:", activeModel);
+        console.log("[OpenRouter] API Key prefix:", openRouterKey ? openRouterKey.slice(0, 12) + "..." : "MISSING");
+        console.log("[OpenRouter] Full request body:", JSON.stringify(requestPayload).slice(0, 600));
+
+        let aiRes;
+        let errBody = "";
+        try {
+          console.log("[OpenRouter] Sending request...");
+          aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${openRouterKey}`,
+              "Content-Type": "application/json",
+              "HTTP-Referer": "https://company-research-assistant.vercel.app",
+              "X-Title": "Company Research Assistant",
+            },
+            body: JSON.stringify(requestPayload),
+          });
+
+          console.log("[OpenRouter] Status (Attempt 1):", aiRes.status);
+          const bodyText = await aiRes.text();
+          console.log("[OpenRouter] Response Body (Attempt 1):", bodyText);
+
+          if (!aiRes.ok) {
+            errBody = bodyText;
+          } else {
+            // It succeeded, parse it
+            const aiData = JSON.parse(bodyText);
+            const content = aiData.choices?.[0]?.message?.content || "{}";
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            const report = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+            send({ type: "progress", message: "✅ Report generated successfully!" });
+            send({ type: "complete", report: { ...report, website: report.website || targetUrl, phone: report.phone || phone, address: report.address || address } });
+            return;
+          }
+        } catch (e) {
+          console.error("[OpenRouter] Exception on Attempt 1:", e);
+          errBody = e instanceof Error ? e.message : String(e);
+        }
+
+        // If we reach here, Attempt 1 failed. Let's retry without json_object mode
+        console.log("[OpenRouter] Retrying without json_object...");
+        try {
+          const retryPayload = {
+            model: activeModel,
+            messages: [{ role: "user", content: prompt }],
+          };
+
           const retryRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
             headers: {
               Authorization: `Bearer ${openRouterKey}`,
               "Content-Type": "application/json",
+              "HTTP-Referer": "https://company-research-assistant.vercel.app",
+              "X-Title": "Company Research Assistant",
             },
-            body: JSON.stringify({
-              model: aiModel || "anthropic/claude-3.5-sonnet",
-              messages: [{ role: "user", content: prompt }],
-            }),
+            body: JSON.stringify(retryPayload),
           });
-          if (!retryRes.ok) throw new Error(`OpenRouter error: ${retryRes.status}`);
-          const retryData = await retryRes.json();
+
+          console.log("[OpenRouter] Status (Attempt 2):", retryRes.status);
+          const retryBodyText = await retryRes.text();
+          console.log("[OpenRouter] Response Body (Attempt 2):", retryBodyText);
+
+          if (!retryRes.ok) {
+            throw new Error(`OpenRouter ${retryRes.status}: ${retryBodyText}`);
+          }
+
+          const retryData = JSON.parse(retryBodyText);
           const content = retryData.choices?.[0]?.message?.content || "{}";
           const jsonMatch = content.match(/\{[\s\S]*\}/);
           const report = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+          
           send({ type: "progress", message: "✅ Report generated successfully!" });
           send({ type: "complete", report: { ...report, website: report.website || targetUrl, phone: report.phone || phone, address: report.address || address } });
-          controller.close();
-          return;
+        } catch (e) {
+          console.error("[OpenRouter] Exception on Attempt 2:", e);
+          throw e; // Bubble up to outer try/catch
         }
-
-        const aiData = await aiRes.json();
-        const content = aiData.choices?.[0]?.message?.content || "{}";
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        const report = JSON.parse(jsonMatch ? jsonMatch[0] : content);
-
-        send({ type: "progress", message: "✅ Report generated successfully!" });
-        send({ type: "complete", report: { ...report, website: report.website || targetUrl, phone: report.phone || phone, address: report.address || address } });
 
       } catch (err: any) {
         send({ type: "error", message: err.message || "An error occurred" });
       } finally {
-        controller.close();
+        try { controller.close(); } catch (e) {}
       }
     },
   });

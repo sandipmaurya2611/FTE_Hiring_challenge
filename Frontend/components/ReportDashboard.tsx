@@ -17,13 +17,16 @@ export default function ReportDashboard({ report }: ReportDashboardProps) {
   const handleDownloadPdf = async () => {
     setPdfLoading(true);
     try {
-      const res = await fetch("/api/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ report }),
-      });
-      if (!res.ok) throw new Error("PDF generation failed");
-      const blob = await res.blob();
+      // Dynamically import the browser build of @react-pdf/renderer so that
+      // the server-side fontkit module (which has a missing dist/main.cjs) is
+      // never loaded during SSR/compilation. PDF generation runs 100% in-browser.
+      const [{ pdf }, React, { ReportDocument }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("react"),
+        import("../lib/pdf/ReportDocument"),
+      ]);
+
+      const blob = await pdf(React.createElement(ReportDocument, { report })).toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -40,12 +43,8 @@ export default function ReportDashboard({ report }: ReportDashboardProps) {
       if (discordToken && discordChannel) {
         setDiscordStatus("sending");
         try {
-          const pdfRes = await fetch("/api/pdf", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ report }),
-          });
-          const pdfBlob = await pdfRes.blob();
+          // Re-generate a fresh blob for the Discord upload
+          const pdfBlob = await pdf(React.createElement(ReportDocument, { report })).toBlob();
           const pdfBase64 = await new Promise<string>((resolve) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
@@ -84,6 +83,7 @@ export default function ReportDashboard({ report }: ReportDashboardProps) {
       setPdfLoading(false);
     }
   };
+
 
   return (
     <div className="max-w-5xl mx-auto w-full pb-48 animate-in fade-in zoom-in-95 duration-500 mt-4">
