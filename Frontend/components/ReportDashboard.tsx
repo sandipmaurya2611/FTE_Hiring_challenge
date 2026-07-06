@@ -1,7 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
+import type { ReactElement } from "react";
 import { Download, ExternalLink, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import type { DocumentProps } from "@react-pdf/renderer";
 import { ReportData } from "../types";
 
 interface ReportDashboardProps {
@@ -26,7 +28,11 @@ export default function ReportDashboard({ report }: ReportDashboardProps) {
         import("../lib/pdf/ReportDocument"),
       ]);
 
-      const blob = await pdf(React.createElement(ReportDocument, { report })).toBlob();
+      // ReportDocument's own props intentionally differ from react-pdf's generic
+      // DocumentProps typing, so the element type is widened explicitly here
+      // rather than reaching for a blanket `any` cast.
+      const documentElement = React.createElement(ReportDocument, { report }) as ReactElement<DocumentProps>;
+      const blob = await pdf(documentElement).toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -44,7 +50,7 @@ export default function ReportDashboard({ report }: ReportDashboardProps) {
         setDiscordStatus("sending");
         try {
           // Re-generate a fresh blob for the Discord upload
-          const pdfBlob = await pdf(React.createElement(ReportDocument, { report })).toBlob();
+          const pdfBlob = await pdf(React.createElement(ReportDocument, { report }) as ReactElement<DocumentProps>).toBlob();
           const pdfBase64 = await new Promise<string>((resolve) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve((reader.result as string).split(",")[1]);

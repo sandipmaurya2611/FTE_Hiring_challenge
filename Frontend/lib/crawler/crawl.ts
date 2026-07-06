@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
 const MAX_PAGES = 6;
@@ -63,8 +62,35 @@ function extractLinks(html: string, baseUrl: string): string[] {
 
 function extractText(html: string): string {
   const $ = cheerio.load(html);
-  $("script, style, nav, footer, header, noscript, iframe, svg").remove();
-  return $("body").text().replace(/\s+/g, " ").trim().slice(0, 3000);
+
+  // tel: links and semantic <address> tags are unambiguous, structured contact
+  // signals — pull them out explicitly before stripping anything, so a phone
+  // number that only exists inside a link's href (not as visible text) still
+  // reaches the AI, clearly labeled instead of buried in noisy body text.
+  const phones = new Set<string>();
+  $('a[href^="tel:"]').each((_, el) => {
+    const num = ($(el).attr("href") || "").replace(/^tel:/i, "").trim();
+    if (num) phones.add(num);
+  });
+  const addresses = new Set<string>();
+  $("address").each((_, el) => {
+    const text = $(el).text().replace(/\s+/g, " ").trim();
+    if (text) addresses.add(text);
+  });
+
+  // Note: footer/header are intentionally kept — most sites put their phone
+  // number and mailing address in the site footer (or a contact bar in the
+  // header), and stripping them was silently discarding that data before the
+  // AI ever saw it.
+  $("script, style, nav, noscript, iframe, svg").remove();
+  const bodyText = $("body").text().replace(/\s+/g, " ").trim().slice(0, 3000);
+
+  const signals = [
+    phones.size > 0 ? `[Phone found on page: ${Array.from(phones).join(", ")}]` : "",
+    addresses.size > 0 ? `[Address found on page: ${Array.from(addresses).join(" | ")}]` : "",
+  ].filter(Boolean).join(" ");
+
+  return signals ? `${signals} ${bodyText}` : bodyText;
 }
 
 export async function crawl(startUrl: string): Promise<string> {

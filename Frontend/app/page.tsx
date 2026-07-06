@@ -20,6 +20,7 @@ export default function Home() {
     setIsGenerating(false);
     setProgress([]);
     setErrorMsg("");
+    setIsSidebarOpen(false);
   };
 
   const handleStartResearch = async (query: string) => {
